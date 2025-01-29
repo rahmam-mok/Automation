@@ -1,0 +1,250 @@
+If the DeveloperToolsAvailability registry key is set to 1, it means Developer Tools are disabled in Chrome or Edge, which can indirectly block or interfere with Selenium automation because automation tools often rely on developer tools for certain actions.
+
+What This Means
+	•	Setting DeveloperToolsAvailability = 1 explicitly disables developer tools, making it harder for Selenium to interact with or debug the browser.
+	•	While this doesn’t directly block WebDriver, it may prevent certain features, like remote debugging or inspection.
+
+How to Fix It
+
+To allow automation to work, you need to either change this value or override it temporarily:
+
+Option 1: Modify the Registry (Requires Admin Privileges)
+	1.	Open Registry Editor (regedit).
+	2.	Navigate to the following paths:
+	•	For Chrome:
+HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome
+	•	For Edge:
+HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge
+	3.	Locate the DeveloperToolsAvailability key.
+	4.	Change its value:
+	•	0: Developer Tools are enabled.
+	•	2: Developer Tools are enabled but can only be used in the remote debugging mode.
+	5.	Restart the browser.
+
+Option 2: Override via Command-Line Arguments
+
+If you cannot modify the registry due to IT restrictions, try launching the browser with flags that override the policy.
+
+For Chrome
+
+Run the browser with the following flags:
+
+chrome.exe --disable-blink-features=AutomationControlled --disable-features=RendererCodeIntegrity --remote-debugging-port=9222
+
+For Edge
+
+Run:
+
+msedge.exe --disable-blink-features=AutomationControlled --disable-features=RendererCodeIntegrity --remote-debugging-port=9222
+
+Option 3: Bypass Automation Detection
+
+Add options to your Selenium script to bypass certain enterprise-level restrictions.
+
+Python Example
+
+from selenium import webdriver
+
+options = webdriver.ChromeOptions()
+options.add_argument("--disable-blink-features=AutomationControlled")
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_experimental_option("useAutomationExtension", False)
+
+driver = webdriver.Chrome(options=options)
+driver.get("https://www.google.com")
+print(driver.title)
+driver.quit()
+
+Java Example
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+
+public class SeleniumTest {
+    public static void main(String[] args) {
+        System.setProperty("webdriver.chrome.driver", "C:\\path\\to\\chromedriver.exe");
+
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--disable-blink-features=AutomationControlled");
+        options.setExperimentalOption("excludeSwitches", new String[]{"enable-automation"});
+        options.setExperimentalOption("useAutomationExtension", false);
+
+        WebDriver driver = new ChromeDriver(options);
+        driver.get("https://www.google.com");
+        System.out.println(driver.getTitle());
+        driver.quit();
+    }
+}
+
+Option 4: Use a Portable Browser
+
+Some enterprise restrictions are applied to the installed versions of browsers. You can:
+	1.	Download a portable version of Chrome or Edge.
+	2.	Use it exclusively for Selenium tests.
+
+Option 5: Use a Virtual Machine
+
+If IT policies are restrictive and cannot be overridden:
+	•	Use a personal or virtual machine outside of the enterprise network for automation testing.
+
+Confirm Automation Works
+
+After making changes, test by running a simple Selenium script or trying to launch the browser with remote debugging.
+
+If none of this works, you might need to consult your IT department to lift restrictions or use an alternative testing setup. Let me know if you need further help!
+
+
+To check if automation is explicitly blocked on your enterprise computer, try the following methods:
+
+1. Run Chrome or Edge in Automation Mode Manually
+
+Browsers like Chrome and Edge provide specific flags for automation. If these commands fail, automation may be restricted.
+
+Chrome
+
+Open Command Prompt (cmd) and run:
+
+chrome.exe --remote-debugging-port=9222 --disable-blink-features=AutomationControlled
+
+If Chrome doesn’t open or throws an error, it may be restricted.
+
+Edge
+
+msedge.exe --remote-debugging-port=9222 --disable-blink-features=AutomationControlled
+
+If this fails, Edge automation is likely blocked.
+
+2. Check for Group Policy Restrictions
+
+Your enterprise might block automation via Group Policy.
+	1.	Press Win + R, type gpedit.msc, and hit Enter.
+	2.	Navigate to:
+	•	For Chrome:
+Computer Configuration > Administrative Templates > Google > Google Chrome
+	•	For Edge:
+Computer Configuration > Administrative Templates > Microsoft Edge
+	3.	Look for policies like:
+	•	“Block WebDriver”
+	•	“Disable Developer Tools”
+	•	“Prevent Remote Debugging”
+	•	“Prevent installation of ChromeDriver or EdgeDriver”
+
+If any of these policies are enabled, they could be blocking Selenium.
+
+3. Check for Browser Driver Execution Issues
+
+Try running ChromeDriver or EdgeDriver manually.
+
+ChromeDriver
+	1.	Download the appropriate version from ChromeDriver.
+	2.	Open Command Prompt, navigate to the folder containing chromedriver.exe, and run:
+
+chromedriver.exe
+
+
+	3.	If automation is blocked, you may see:
+	•	"Failed to start ChromeDriver"
+	•	"Selenium automation is restricted by your administrator"
+	•	"Access is denied"
+
+EdgeDriver
+	1.	Download from Edge WebDriver.
+	2.	Run:
+
+msedgedriver.exe
+
+
+	3.	If EdgeDriver is blocked, similar errors will appear.
+
+4. Check Windows Defender / Antivirus Logs
+
+Some enterprise security tools block Selenium automation. Check logs for any blocks related to:
+	•	chromedriver.exe
+	•	msedgedriver.exe
+	•	java.exe (if using Selenium with Java)
+	•	python.exe (if using Selenium with Python)
+
+Try disabling real-time protection temporarily (if permitted) and rerun your automation script.
+
+5. Run a Simple Selenium Script
+
+If you suspect a restriction, create a basic Selenium script and see if it fails.
+
+Python
+
+from selenium import webdriver
+
+options = webdriver.ChromeOptions()
+options.add_experimental_option("excludeSwitches", ["enable-automation"])
+options.add_experimental_option("useAutomationExtension", False)
+
+driver = webdriver.Chrome(options=options)
+driver.get("https://www.google.com")
+print(driver.title)
+driver.quit()
+
+Java
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+
+public class SeleniumTest {
+    public static void main(String[] args) {
+        System.setProperty("webdriver.chrome.driver", "C:\\path\\to\\chromedriver.exe");
+
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--disable-blink-features=AutomationControlled");
+
+        WebDriver driver = new ChromeDriver(options);
+        driver.get("https://www.google.com");
+        System.out.println(driver.getTitle());
+        driver.quit();
+    }
+}
+
+If the script fails with access denied or automation blocked errors, then automation is explicitly restricted.
+
+6. Check if Browser Detects Automation
+
+Run this in Chrome’s Developer Console (F12 > Console):
+
+console.log(navigator.webdriver);
+
+	•	If true, Selenium automation is detected.
+	•	If false, it may still be blocked at the OS level.
+
+7. Check Registry Settings (Windows)
+
+Selenium automation may be blocked through the registry.
+	1.	Press Win + R, type regedit, and hit Enter.
+	2.	Navigate to:
+	•	Chrome:
+HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google\Chrome
+	•	Edge:
+HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge
+	3.	Look for values like:
+	•	“DisableWebDriver” → If set to 1, automation is blocked.
+	•	“RemoteDebuggingBlocked” → If present, it prevents automation debugging.
+
+If these values exist, try deleting them (requires admin rights) and restart your PC.
+
+8. Check for Network Restrictions
+
+Your company may block WebDriver traffic at the network level.
+	1.	Open cmd and try:
+
+ping chromedriver.storage.googleapis.com
+
+
+	2.	If it fails, your network may be blocking Selenium-related resources.
+
+Conclusion
+
+If any of the above methods indicate blocking:
+✅ IT Policy: Contact IT to request an exception.
+✅ Use a Different Machine: Test on a personal laptop to confirm restrictions.
+✅ Try Older Browser Versions: Some restrictions apply only to newer versions.
+
+Let me know what errors you’re seeing, and I can help troubleshoot further!
